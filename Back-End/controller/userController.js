@@ -1,13 +1,12 @@
 const User = require("../models/UserModel");
 const ErrorHandler = require("../utils/ErrorHandler.js");
-const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const sendToken = require("../utils/jwtToken.js");
 const sendMail = require("../utils/sendMail.js");
 // const crypto = require("crypto");
 const cloudinary = require("cloudinary");
 
 // Register user
-exports.createUser = catchAsyncErrors(async (req, res, next) => {
+const createUser = async (req, res, next) => {
   try {
     const { name, email, password, avatar } = req.body;
 
@@ -36,49 +35,56 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
       message: error.message,
     });
   }
-});
+};
 
 // Login User
-exports.loginUser = catchAsyncErrors(async (req, res, next) => {
+const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
+  try {
+    if (!email || !password) {
+      return next(new ErrorHandler("Please enter the email & password", 400));
+    }
 
-  if (!email || !password) {
-    return next(new ErrorHandler("Please enter the email & password", 400));
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return next(
+        new ErrorHandler("User is not find with this email & password", 401)
+      );
+    }
+    const isPasswordMatched = await user.comparePassword(password);
+
+    if (!isPasswordMatched) {
+      return next(
+        new ErrorHandler("User is not find with this email & password", 401)
+      );
+    }
+
+    sendToken(user, 201, res);
+  } catch (error) {
+    next(error);
   }
-
-  const user = await User.findOne({ email }).select("+password");
-
-  if (!user) {
-    return next(
-      new ErrorHandler("User is not find with this email & password", 401)
-    );
-  }
-  const isPasswordMatched = await user.comparePassword(password);
-
-  if (!isPasswordMatched) {
-    return next(
-      new ErrorHandler("User is not find with this email & password", 401)
-    );
-  }
-
-  sendToken(user, 201, res);
-});
+};
 
 //  Log out user
-exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
-  res.cookie("token", null, {
-    expires: new Date(Date.now()),
-    httpOnly: true,
-  });
+const logoutUser = async (req, res, next) => {
+  try {
+    res.cookie("token", null, {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+    });
 
-  res.status(200).json({
-    success: true,
-    message: "Log out success",
-  });
-});
+    res.status(200).json({
+      success: true,
+      message: "Log out success",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Forgot password
-exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
+const forgotPassword = async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
@@ -120,10 +126,10 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
     return next(new ErrorHandler(error.message, 500));
   }
-});
+};
 
 // Reset Password
-exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
+const resetPassword = async (req, res, next) => {
   // Create Token hash
 
   const resetPasswordToken = crypto
@@ -156,20 +162,20 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
   await user.save();
 
   sendToken(user, 200, res);
-});
+};
 
 //  Get user Details
-exports.userDetails = catchAsyncErrors(async (req, res, next) => {
+const userDetails = async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
   res.status(200).json({
     success: true,
     user,
   });
-});
+};
 
 // Update User Password
-exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
+const updatePassword = async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
 
   const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
@@ -187,10 +193,10 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   await user.save();
 
   sendToken(user, 200, res);
-});
+};
 
 // Update User Profile
-exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
+const updateProfile = async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
@@ -223,20 +229,20 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
   });
-});
+};
 
 // Get All users ---Admin
-exports.getAllUsers = catchAsyncErrors(async (req, res, next) => {
+const getAllUsers = async (req, res, next) => {
   const users = await User.find();
 
   res.status(200).json({
     success: true,
     users,
   });
-});
+};
 
 // Get Single User Details ---Admin
-exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
+const getSingleUser = async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
@@ -247,10 +253,10 @@ exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     user,
   });
-});
+};
 
 // Change user Role --Admin
-exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
+const updateUserRole = async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
     email: req.body.email,
@@ -266,10 +272,10 @@ exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
     success: true,
     user,
   });
-});
+};
 
 // Delete User ---Admin
-exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
+const deleteUser = async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
   const imageId = user.avatar.public_id;
@@ -286,4 +292,18 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: "User deleted successfully",
   });
-});
+};
+
+module.exports = {
+  createUser,
+  loginUser,
+  logoutUser,
+  forgotPassword,
+  resetPassword,
+  getSingleUser,
+  getAllUsers,
+  updateProfile,
+  updateUserRole,
+  updatePassword,
+  deleteUser,
+};
