@@ -1,4 +1,4 @@
-const Product = require("../modles/Product");
+const Product = require("../modles/ProductModle");
 const ErrorHandler = require("../middleware/error");
 const Features = require("../utils/features");
 
