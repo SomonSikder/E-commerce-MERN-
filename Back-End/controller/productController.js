@@ -1,5 +1,6 @@
 const Product = require("../modles/Product");
 const ErrorHandler = require("../middleware/error");
+const Features = require("../utils/features");
 
 const productCreate = async (req, res, next) => {
   const product = await Product.create(req.body);
@@ -14,11 +15,21 @@ const productCreate = async (req, res, next) => {
 };
 
 const getAllProducts = async (req, res, next) => {
-  const allProducts = await Product.find({});
+  const resultPerPage = 8;
+  const productsCount = await Product.countDocuments();
+
+  const feature = new Features(Product.find(), req.query)
+    .search()
+    .filter()
+    .pagination(resultPerPage);
+  const allProducts = await feature.query;
+
   try {
     return res.status(201).json({
       success: true,
       allProducts,
+      productsCount,
+      resultPerPage,
     });
   } catch (error) {
     next(error);
