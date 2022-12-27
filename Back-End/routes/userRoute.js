@@ -16,5 +16,6 @@ const {
 routes.post("/registration", createUser);
 routes.post("/login", loginUser);
 routes.get("/logout", logoutUser);
+router.post("/password/forgot", forgotPassword);
 
 module.exports = routes;
