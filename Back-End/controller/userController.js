@@ -1,4 +1,4 @@
-const User = require("../models/UserModle");
+const User = require("../models/UserModel");
 const ErrorHandler = require("../utils/errorHandler");
 const sendToken = require("../utils/jwtToken.js");
 const sendMail = require("../utils/sendMail.js");

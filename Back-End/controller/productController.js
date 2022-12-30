@@ -1,4 +1,4 @@
-const Product = require("../models/ProductModle");
+const Product = require("../models/ProductModel");
 const ErrorHandler = require("../middleware/error");
 const Features = require("../utils/features");
 
@@ -193,6 +193,7 @@ const deleteReview = async (req, res, next) => {
     next(error);
   }
 };
+
 module.exports = {
   productCreate,
   getAllProducts,
