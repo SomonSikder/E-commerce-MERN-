@@ -6,6 +6,9 @@ const {
   getSingleProduct,
   productUpdate,
   productDelete,
+  createProductReview,
+  getSingleProductReviews,
+  deleteReview,
 } = require("../controller/productController");
 
 routes.post(
@@ -23,5 +26,12 @@ routes.delete(
   authorizeRoles("admin"),
   productDelete
 );
-
+routes.post("/review/new", isAuthenticatedUser, createProductReview);
+routes.get("/review/:id", getSingleProductReviews);
+routes.delete(
+  "/review-delete/:productId",
+  isAuthenticatedUser,
+  authorizeRoles("admin"),
+  deleteReview
+);
 module.exports = routes;

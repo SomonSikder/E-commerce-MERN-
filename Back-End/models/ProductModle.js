@@ -1,21 +1,25 @@
-const { model } = require("mongoose");
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Please Enter a Name of Product"],
-    maxlength: [15, "Product Name can't be more then 15 words"],
+    required: [true, "Please enter a name of a product"],
+    trim: true,
+    maxLength: [20, "Product name not exceed than 20 characters"],
   },
   description: {
     type: String,
-    required: [true, "Please Enter a Description of Product"],
-    maxlength: [4000, "Description can't be more then 4000 words"],
+    required: [true, "Please add a description of your product"],
+    maxlength: [4000, "Description is can not exceed than 4000 characters"],
   },
   price: {
     type: Number,
-    required: [true, "Please Provide price of Product"],
-    maxlength: [8, "Price can't be more then 8 Characters"],
+    required: [true, "Please add a price for your product"],
+    maxLength: [8, "Price can not exceed than 8 characters"],
+  },
+  offerPrice: {
+    type: String,
+    maxLength: [4, "Discount price can not exceed than 4 characters"],
   },
   color: {
     type: String,
@@ -23,7 +27,7 @@ const productSchema = new mongoose.Schema({
   size: {
     type: String,
   },
-  rating: {
+  ratings: {
     type: Number,
     default: 0,
   },
@@ -41,12 +45,12 @@ const productSchema = new mongoose.Schema({
   ],
   category: {
     type: String,
-    required: [true, "Please Add a category of your Product"],
+    required: [true, "Please add a category of your product"],
   },
   stock: {
     type: Number,
-    required: [true, "Please Add some stock of your Product"],
-    minlength: [4, "Stock can't be less then 4"],
+    required: [true, "Please add some stoke for your product"],
+    maxLength: [3, "Stock can not exceed than 3 characters"],
   },
   numOfReviews: {
     type: Number,
@@ -57,18 +61,18 @@ const productSchema = new mongoose.Schema({
       user: {
         type: mongoose.Schema.ObjectId,
         ref: "User",
-        // required: true,
+        required: true,
       },
       name: {
         type: String,
-        // required: true,
+        required: true,
       },
       rating: {
         type: Number,
-        // required: true,
+        required: true,
       },
       comment: {
-        type: Number,
+        type: String,
       },
       time: {
         type: Date,
@@ -79,7 +83,6 @@ const productSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
-    // required: true,
   },
   createAt: {
     type: Date,
@@ -87,5 +90,4 @@ const productSchema = new mongoose.Schema({
   },
 });
 
-const Product = new mongoose.model("Product", productSchema);
-module.exports = Product;
+module.exports = mongoose.model("Product", productSchema);
