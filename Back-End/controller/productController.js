@@ -147,7 +147,7 @@ const getSingleProductReviews = async (req, res, next) => {
 
 // Delete Review --Admin
 const deleteReview = async (req, res, next) => {
-  const product = await Product.findById(req.query.productId);
+  const product = await Product.findById(req.params.productId);
   if (!product) {
     return next(new ErrorHandler("Product not found with this id", 404));
   }
@@ -156,7 +156,6 @@ const deleteReview = async (req, res, next) => {
     const reviews = product.reviews.filter(
       (rev) => rev._id.toString() !== req.query.id.toString()
     );
-
     let avg = 0;
 
     reviews.forEach((rev) => {
@@ -170,11 +169,9 @@ const deleteReview = async (req, res, next) => {
     } else {
       ratings = avg / reviews.length;
     }
-
     const numOfReviews = reviews.length;
-
-    await Product.findByIdAndUpdate(
-      req.query.productId,
+    const result = await Product.findByIdAndUpdate(
+      req.params.productId,
       {
         reviews,
         ratings,
@@ -186,6 +183,7 @@ const deleteReview = async (req, res, next) => {
         useFindAndModify: false,
       }
     );
+    console.log(result);
 
     res.status(200).json({
       success: true,
